@@ -103,31 +103,12 @@ uvicorn app.main:app --reload --port 8000
 
 ---
 
-## 🚀 Cách sử dụng API
+## 🌐 Live Demo
 
-### Swagger UI (Giao diện trực quan)
-Mở trình duyệt và truy cập:
-http://localhost:8000/docs
-### Gọi API bằng PowerShell
-```powershell
-Invoke-RestMethod -Uri "http://localhost:8000/predict" `
-  -Method POST `
-  -ContentType "application/json" `
-  -Body '{"text": "I want to order a pizza"}'
-```
+API đã được deploy và có thể truy cập công khai tại:
 
-### Gọi API bằng curl
-```bash
-curl -X POST "http://localhost:8000/predict" \
-  -H "Content-Type: application/json" \
-  -d '{"text": "I want to book a table for 2"}'
-```
+- **Base URL:** https://restaurant-calling-agent.onrender.com
+- **Swagger UI:** https://restaurant-calling-agent.onrender.com/docs
+- **Health Check:** https://restaurant-calling-agent.onrender.com/
 
-### Response mẫu
-```json
-{
-  "text": "I want to order a pizza",
-  "intent": "order",
-  "confidence": 0.9823
-}
-```
+> ⚠️ Free tier: request đầu tiên có thể mất 30-60 giây nếu server đang ngủ.
