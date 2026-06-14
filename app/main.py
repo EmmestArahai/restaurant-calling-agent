@@ -1,106 +1,197 @@
 # =============================================================
 # app/main.py
-# Mục đích: Khởi tạo FastAPI server, load model, tạo endpoint /predict
+# Phiên bản 2.0 — Thêm: Logging, GET /intents
 # =============================================================
 
 import os
+import logging
 import joblib
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from datetime import datetime
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
+from app.entity_extractor import extract_all_entities
+from app.auth import verify_api_key
 
-# ── 1. Load biến môi trường từ file .env ──────────────────────
+# ── 1. Load biến môi trường ───────────────────────────────────
 load_dotenv()
 MODEL_PATH = os.getenv("MODEL_PATH", "models/intent_model.pkl")
+LOG_PATH   = os.getenv("LOG_PATH", "logs/api.log")
 
-# ── 2. Khởi tạo ứng dụng FastAPI ─────────────────────────────
-# title, description, version sẽ hiển thị đẹp trên Swagger UI
+# ── 2. Cấu hình Logging ───────────────────────────────────────
+# Tạo thư mục logs/ nếu chưa có
+os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
+
+# Tạo logger riêng cho ứng dụng
+logger = logging.getLogger("restaurant_api")
+logger.setLevel(logging.INFO)
+
+# Handler 1: ghi ra FILE (lưu vĩnh viễn)
+file_handler = logging.FileHandler(LOG_PATH, encoding="utf-8")
+file_handler.setLevel(logging.INFO)
+
+# Handler 2: in ra TERMINAL (tiện theo dõi khi dev)
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+
+# Format log: [2024-01-15 20:30:00] INFO — nội dung
+formatter = logging.Formatter(
+    "[%(asctime)s] %(levelname)s — %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
+
+# ── 3. Khởi tạo FastAPI ───────────────────────────────────────
 app = FastAPI(
     title="🍽️ Restaurant AI Calling Agent API",
     description=(
         "API phân loại ý định (Intent Classification) từ câu nói của khách hàng. "
         "Hỗ trợ 6 intent: order, greeting, reservation, query, complaint, cancel."
     ),
-    version="1.0.0",
+    version="2.0.0",
 )
 
-# ── 3. Load model khi server khởi động ────────────────────────
-# Biến toàn cục để tái sử dụng model ở mọi request
-# Chỉ load 1 lần duy nhất → tiết kiệm tài nguyên
+# ── 4. Danh sách intent hợp lệ ───────────────────────────────
+# Định nghĩa tập trung ở đây, dùng lại ở nhiều chỗ
+SUPPORTED_INTENTS = [
+    {
+        "intent": "order",
+        "description": "Customer wants to order food",
+        "example": "I want to order a pizza"
+    },
+    {
+        "intent": "greeting",
+        "description": "Customer is greeting",
+        "example": "Hello, good evening"
+    },
+    {
+        "intent": "reservation",
+        "description": "Customer wants to book a table",
+        "example": "Book a table for 2 at 7 PM"
+    },
+    {
+        "intent": "query",
+        "description": "Customer is asking for information",
+        "example": "What are your opening hours?"
+    },
+    {
+        "intent": "complaint",
+        "description": "Customer is complaining about service",
+        "example": "My order is late and food is cold"
+    },
+    {
+        "intent": "cancel",
+        "description": "Customer wants to cancel order or reservation",
+        "example": "Cancel my reservation please"
+    },
+]
+
+# ── 5. Load model khi server khởi động ───────────────────────
 model = None
 
 @app.on_event("startup")
 def load_model():
-    """Hàm này tự động chạy khi FastAPI server khởi động."""
     global model
     if not os.path.exists(MODEL_PATH):
         raise RuntimeError(
-            f"❌ Không tìm thấy file model tại '{MODEL_PATH}'. "
+            f"❌ Không tìm thấy model tại '{MODEL_PATH}'. "
             "Hãy chạy scripts/train_model.py trước!"
         )
     model = joblib.load(MODEL_PATH)
-    print(f"✅ Model đã được load thành công từ: {MODEL_PATH}")
+    logger.info(f"Model loaded thành công từ: {MODEL_PATH}")
+    logger.info(f"API v2.0.0 khởi động — Log file: {LOG_PATH}")
 
-# ── 4. Định nghĩa schema cho Request (đầu vào) ────────────────
-# Pydantic tự động validate kiểu dữ liệu và sinh docs cho Swagger
+# ── 6. Schema Request / Response ─────────────────────────────
 class PredictRequest(BaseModel):
     text: str = Field(
-        ...,                          # ... nghĩa là bắt buộc phải có
+        ...,
         min_length=1,
         max_length=500,
-        example="I want to order a pizza please"
+        example="I want to order a pizza at 7 PM"
     )
 
-# ── 5. Định nghĩa schema cho Response (đầu ra) ────────────────
 class PredictResponse(BaseModel):
-    text: str           # Câu nói gốc của khách
-    intent: str         # Intent được dự đoán
-    confidence: float   # Độ tin cậy (0.0 → 1.0)
+    text: str
+    intent: str
+    confidence: float
+    time: str | None
+    food_item: str | None
+    location: str | None
 
-# ── 6. Endpoint GET / — Kiểm tra server còn sống không ────────
+# ── 7. GET / — Health Check ───────────────────────────────────
 @app.get("/", summary="Health Check")
 def root():
-    """Endpoint kiểm tra server đang hoạt động."""
+    logger.info("Health check endpoint được gọi")
     return {
         "status": "online",
+        "version": "2.0.0",
         "message": "🍽️ Restaurant AI Calling Agent API đang hoạt động!",
         "docs": "/docs"
     }
 
-# ── 7. Endpoint POST /predict — TRUNG TÂM CỦA TOÀN BỘ API ────
+# ── 8. GET /intents — Danh sách intent được hỗ trợ ───────────
+@app.get(
+    "/intents",
+    summary="Lấy danh sách tất cả Intent được hỗ trợ",
+    tags=["Info"]
+)
+def get_intents():
+    """
+    Trả về danh sách 6 intent mà model có thể phân loại,
+    kèm mô tả và câu ví dụ cho từng intent.
+    Hữu ích cho frontend hoặc developer tích hợp API.
+    """
+    logger.info("GET /intents được gọi")
+    return {
+        "total": len(SUPPORTED_INTENTS),
+        "intents": SUPPORTED_INTENTS
+    }
+
+# ── 9. POST /predict — Phân loại Intent chính ────────────────
 @app.post(
     "/predict",
     response_model=PredictResponse,
     summary="Phân loại Intent từ câu nói của khách hàng",
-    tags=["NLP"]
+    tags=["NLP"],
+    dependencies=[Depends(verify_api_key)]
 )
 def predict_intent(request: PredictRequest):
     """
-    Nhận vào câu nói của khách hàng và trả về:
-    - **intent**: Ý định được phân loại (order/greeting/reservation/query/complaint/cancel)
-    - **confidence**: Độ tin cậy của dự đoán (càng gần 1.0 càng chắc chắn)
+    Nhận câu nói → trả về intent, confidence và các entity
+    (time, food_item, location) được trích xuất từ câu nói.
     """
-    # Kiểm tra model đã được load chưa
     if model is None:
         raise HTTPException(status_code=503, detail="Model chưa sẵn sàng.")
 
-    # Lấy text từ request và dự đoán
-    user_text = request.text.strip()
+    user_text    = request.text.strip()
+    probabilities     = model.predict_proba([user_text])[0]
+    predicted_idx     = probabilities.argmax()
+    predicted_intent  = model.classes_[predicted_idx]
+    confidence_score  = round(float(probabilities[predicted_idx]), 4)
+    entities          = extract_all_entities(user_text)
 
-    # predict_proba trả về xác suất cho từng intent
-    # Lấy index của xác suất cao nhất → đó là intent được chọn
-    probabilities  = model.predict_proba([user_text])[0]
-    predicted_idx  = probabilities.argmax()
-    predicted_intent    = model.classes_[predicted_idx]
-    confidence_score    = round(float(probabilities[predicted_idx]), 4)
+    # Ghi log mỗi request: input và output
+    logger.info(
+        f"PREDICT | text='{user_text}' | "
+        f"intent={predicted_intent} | "
+        f"confidence={confidence_score} | "
+        f"entities={entities}"
+    )
 
     return PredictResponse(
         text=user_text,
         intent=predicted_intent,
-        confidence=confidence_score
+        confidence=confidence_score,
+        time=entities["time"],
+        food_item=entities["food_item"],
+        location=entities["location"],
     )
 
-# ── 8. Chạy trực tiếp bằng lệnh `python app/main.py` ─────────
+# ── 10. Chạy trực tiếp ───────────────────────────────────────
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

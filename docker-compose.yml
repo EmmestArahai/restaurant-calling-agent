@@ -1,0 +1,32 @@
+# =============================================================
+# docker-compose.yml
+# Mục đích: Định nghĩa và quản lý các service của ứng dụng
+# =============================================================
+
+version: "3.9"
+
+services:
+  # ── Service duy nhất: FastAPI server ────────────────────────
+  api:
+    # Build từ Dockerfile trong thư mục hiện tại
+    build: .
+
+    # Tên container dễ nhận biết
+    container_name: restaurant-calling-agent
+
+    # Map cổng: máy thật:container
+    # Truy cập localhost:8000 → vào container cổng 8000
+    ports:
+      - "8000:8000"
+
+    # Load biến môi trường từ file .env
+    env_file:
+      - .env
+
+    # Mount thư mục logs ra ngoài để xem log dễ dàng
+    # Thay đổi trong logs/ của máy thật ↔ container đồng bộ nhau
+    volumes:
+      - ./logs:/app/logs
+
+    # Tự động restart nếu container bị crash
+    restart: unless-stopped

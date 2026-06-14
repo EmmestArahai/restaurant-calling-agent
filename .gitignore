@@ -37,3 +37,9 @@ __pycache__/
 # ── Hệ điều hành ──────────────────────────
 .DS_Store
 Thumbs.db
+
+# ── Log files ─────────────────────────────
+logs/*.log
+
+# ── Docker ────────────────────────────────
+.dockerignore
