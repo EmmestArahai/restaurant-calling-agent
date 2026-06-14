@@ -1,0 +1,39 @@
+# ============================================
+# .gitignore — Restaurant AI Calling Agent
+# ============================================
+
+# ── Môi trường ảo Python ──────────────────
+.venv/
+venv/
+env/
+
+# ── Biến môi trường (TUYỆT ĐỐI không push) ─
+.env
+.env.*
+
+# ── File model đã huấn luyện ──────────────
+# Model nặng và có thể tái tạo bằng train_model.py
+models/*.pkl
+models/*.joblib
+
+# ── Dữ liệu thô (không push lên GitHub) ───
+data/
+
+# ── Python cache ──────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# ── Jupyter Notebook checkpoints ──────────
+.ipynb_checkpoints/
+
+# ── IDE / Editor ──────────────────────────
+.vscode/
+.idea/
+*.sublime-project
+
+# ── Hệ điều hành ──────────────────────────
+.DS_Store
+Thumbs.db
