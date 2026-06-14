@@ -17,7 +17,7 @@ models/*.pkl
 models/*.joblib
 
 # ── Dữ liệu thô (không push lên GitHub) ───
-data/
+# data/
 
 # ── Python cache ──────────────────────────
 __pycache__/
