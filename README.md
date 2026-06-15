@@ -105,10 +105,10 @@ uvicorn app.main:app --reload --port 8000
 
 ## 🌐 Live Demo
 
-API đã được deploy và có thể truy cập công khai tại:
-
-- **Base URL:** https://restaurant-calling-agent.onrender.com
-- **Swagger UI:** https://restaurant-calling-agent.onrender.com/docs
-- **Health Check:** https://restaurant-calling-agent.onrender.com/
+| | URL |
+|---|---|
+| **Base URL** | https://restaurant-calling-agent.onrender.com |
+| **Swagger UI** | https://restaurant-calling-agent.onrender.com/docs |
+| **API Status** | https://stats.uptimerobot.com/Hc3JvxepFv |
 
 > ⚠️ Free tier: request đầu tiên có thể mất 30-60 giây nếu server đang ngủ.
