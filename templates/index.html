@@ -1,0 +1,311 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.wrap{padding:1.5rem 0}
+.hero{margin-bottom:2rem}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:.5rem}
+.brand-dot{width:10px;height:10px;border-radius:50%;background:#e94560}
+.brand-name{font-size:13px;font-weight:500;color:var(--color-text-secondary);letter-spacing:.08em;text-transform:uppercase}
+.hero h1{font-size:26px;font-weight:500;color:var(--color-text-primary);line-height:1.3;margin-bottom:.5rem}
+.hero p{font-size:15px;color:var(--color-text-secondary);line-height:1.6}
+.tabs{display:flex;gap:4px;border-bottom:.5px solid var(--color-border-tertiary);margin-bottom:1.5rem}
+.tab{padding:8px 16px;font-size:14px;font-weight:500;color:var(--color-text-secondary);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s}
+.tab:hover{color:var(--color-text-primary)}
+.tab.active{color:#e94560;border-bottom-color:#e94560}
+.panel{display:none}.panel.active{display:block}
+.field{margin-bottom:1rem}
+.field label{display:block;font-size:13px;font-weight:500;color:var(--color-text-secondary);margin-bottom:6px}
+.field textarea{width:100%;min-height:80px;resize:vertical;font-family:var(--font-sans);font-size:15px;padding:10px 12px;border-radius:var(--border-radius-md);border:.5px solid var(--color-border-secondary)}
+.field input[type=text]{width:100%;font-size:15px;padding:8px 12px;border-radius:var(--border-radius-md);border:.5px solid var(--color-border-secondary)}
+.hint{font-size:12px;color:var(--color-text-tertiary);margin-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{font-size:12px;padding:4px 10px;border-radius:20px;border:.5px solid var(--color-border-secondary);color:var(--color-text-secondary);cursor:pointer;background:var(--color-background-secondary);transition:all .15s}
+.chip:hover{background:var(--color-background-primary);color:var(--color-text-primary);border-color:#e94560}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:var(--border-radius-md);font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:#e94560;color:#fff}.btn-primary:hover{background:#c73650}.btn-primary:disabled{background:var(--color-background-tertiary);color:var(--color-text-tertiary);cursor:not-allowed}
+.btn-ghost{background:none;border:.5px solid var(--color-border-secondary);color:var(--color-text-secondary)}.btn-ghost:hover{background:var(--color-background-secondary)}
+.result-box{margin-top:1.25rem;border-radius:var(--border-radius-lg);border:.5px solid var(--color-border-tertiary);overflow:hidden;display:none}
+.result-box.show{display:block}
+.result-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--color-background-secondary);border-bottom:.5px solid var(--color-border-tertiary)}
+.result-label{font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em}
+.result-status{font-size:12px;padding:3px 8px;border-radius:10px;font-weight:500}
+.status-ok{background:var(--color-background-success);color:var(--color-text-success)}
+.status-err{background:var(--color-background-danger);color:var(--color-text-danger)}
+.result-body{padding:14px;font-family:var(--font-mono);font-size:13px;line-height:1.7;color:var(--color-text-primary);background:var(--color-background-primary)}
+.intent-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:.5rem}
+.intent-card{padding:12px 14px;border-radius:var(--border-radius-md);border:.5px solid var(--color-border-tertiary);background:var(--color-background-primary)}
+.intent-badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 8px;border-radius:10px;margin-bottom:8px;background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.intent-desc{font-size:13px;color:var(--color-text-secondary);line-height:1.5;margin-bottom:6px}
+.intent-ex{font-size:12px;color:var(--color-text-tertiary);font-style:italic}
+.key-field{display:flex;gap:8px;align-items:center}
+.key-field input{flex:1}
+.key-toggle{font-size:12px;color:var(--color-text-tertiary);cursor:pointer;text-decoration:underline;white-space:nowrap}
+.section-title{font-size:13px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem}
+.endpoint-row{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:var(--border-radius-md);border:.5px solid var(--color-border-tertiary);margin-bottom:8px;background:var(--color-background-primary)}
+.method{font-size:11px;font-weight:500;padding:3px 7px;border-radius:4px;font-family:var(--font-mono)}
+.method-post{background:#fdecea;color:#c0392b}
+.method-get{background:#e8f5e9;color:#2e7d32}
+.endpoint-path{font-family:var(--font-mono);font-size:13px;color:var(--color-text-primary)}
+.endpoint-desc{font-size:13px;color:var(--color-text-secondary);margin-left:auto}
+.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:none}
+.spinner.show{display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.confidence-bar{margin-top:12px;display:none}
+.confidence-bar.show{display:block}
+.conf-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:4px}
+.conf-track{height:6px;border-radius:3px;background:var(--color-background-tertiary);overflow:hidden}
+.conf-fill{height:100%;border-radius:3px;background:#e94560;transition:width .4s ease}
+.entity-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.entity-pill{font-size:12px;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:4px}
+.pill-time{background:var(--color-background-info);color:var(--color-text-info)}
+.pill-food{background:var(--color-background-success);color:var(--color-text-success)}
+.pill-loc{background:var(--color-background-warning);color:var(--color-text-warning)}
+.feedback-form{margin-top:1rem;padding:12px;border-radius:var(--border-radius-md);background:var(--color-background-secondary);border:.5px solid var(--color-border-tertiary);display:none}
+.feedback-form.show{display:block}
+.base-url{font-family:var(--font-mono);font-size:12px;color:var(--color-text-tertiary);margin-top:.25rem}
+</style>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="brand"><div class="brand-dot"></div><span class="brand-name">Restaurant AI · NLP API</span></div>
+    <h1>Thử API phân loại ý định<br>khách hàng</h1>
+    <p>Nhập câu nói bằng tiếng Anh — API trả về intent, độ tin cậy và các thông tin trích xuất được.</p>
+    <div class="base-url">https://restaurant-calling-agent.onrender.com</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('predict')">Dự đoán intent</button>
+    <button class="tab" onclick="switchTab('intents')">Danh sách intent</button>
+    <button class="tab" onclick="switchTab('docs')">Endpoints</button>
+  </div>
+
+  <div id="tab-predict" class="panel active">
+    <div class="field">
+      <label>API Key</label>
+      <div class="key-field">
+        <input type="password" id="apiKey" value="restaurant-secret-key-2024" placeholder="Nhập API key..."/>
+        <span class="key-toggle" onclick="toggleKey()">Hiện</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Câu nói của khách</label>
+      <textarea id="inputText" placeholder="VD: I want to order a pizza at 7 PM downtown"></textarea>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn btn-primary" id="predictBtn" onclick="runPredict()">
+        <span id="btnLabel">Gửi yêu cầu</span>
+        <span class="spinner" id="spinner"></span>
+      </button>
+      <button class="btn btn-ghost" onclick="clearResult()">Xoá</button>
+    </div>
+
+    <div class="result-box" id="resultBox">
+      <div class="result-header">
+        <span class="result-label">Response</span>
+        <span class="result-status" id="resultStatus"></span>
+      </div>
+      <div class="result-body">
+        <div id="intentDisplay" style="margin-bottom:12px;display:none">
+          <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:4px">intent</div>
+          <div style="font-size:22px;font-weight:500;color:var(--color-text-primary)" id="intentValue"></div>
+        </div>
+        <div class="confidence-bar" id="confBar">
+          <div class="conf-label">Confidence: <span id="confVal"></span></div>
+          <div class="conf-track"><div class="conf-fill" id="confFill" style="width:0%"></div></div>
+        </div>
+        <div class="entity-row" id="entityRow"></div>
+        <pre id="rawJson" style="margin-top:12px;font-size:12px;color:var(--color-text-secondary);white-space:pre-wrap;border-top:.5px solid var(--color-border-tertiary);padding-top:10px"></pre>
+      </div>
+    </div>
+
+    <div class="feedback-form" id="feedbackForm">
+      <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px">Model đoán sai? Báo lại để cải thiện</div>
+      <div class="field" style="margin-bottom:8px">
+        <label>Intent đúng thực sự</label>
+        <select id="correctIntent" style="width:100%;padding:8px 12px;border-radius:var(--border-radius-md);border:.5px solid var(--color-border-secondary);font-size:14px;background:var(--color-background-primary);color:var(--color-text-primary)">
+          <option value="order">order</option>
+          <option value="greeting">greeting</option>
+          <option value="reservation">reservation</option>
+          <option value="query">query</option>
+          <option value="complaint">complaint</option>
+          <option value="cancel">cancel</option>
+        </select>
+      </div>
+      <button class="btn btn-ghost" style="font-size:13px;padding:7px 14px" onclick="sendFeedback()">Gửi feedback</button>
+      <div id="feedbackMsg" style="font-size:12px;margin-top:6px;color:var(--color-text-success)"></div>
+    </div>
+  </div>
+
+  <div id="tab-intents" class="panel">
+    <div class="section-title">6 intent được hỗ trợ</div>
+    <div class="intent-cards" id="intentCards">
+      <div style="color:var(--color-text-tertiary);font-size:14px">Đang tải...</div>
+    </div>
+  </div>
+
+  <div id="tab-docs" class="panel">
+    <div class="section-title">Các endpoint có sẵn</div>
+    <div class="endpoint-row"><span class="method method-get">GET</span><span class="endpoint-path">/</span><span class="endpoint-desc">Health check</span></div>
+    <div class="endpoint-row"><span class="method method-get">GET</span><span class="endpoint-path">/intents</span><span class="endpoint-desc">Danh sách intent</span></div>
+    <div class="endpoint-row"><span class="method method-post">POST</span><span class="endpoint-path">/predict</span><span class="endpoint-desc">Phân loại câu nói</span></div>
+    <div class="endpoint-row"><span class="method method-post">POST</span><span class="endpoint-path">/feedback</span><span class="endpoint-desc">Báo đoán sai</span></div>
+    <div style="margin-top:1rem;padding:12px;border-radius:var(--border-radius-md);background:var(--color-background-secondary);border:.5px solid var(--color-border-tertiary)">
+      <div style="font-size:13px;font-weight:500;margin-bottom:6px;color:var(--color-text-primary)">Xác thực</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.6">Mọi request đến <code style="font-family:var(--font-mono);background:var(--color-background-tertiary);padding:1px 5px;border-radius:3px">/predict</code> và <code style="font-family:var(--font-mono);background:var(--color-background-tertiary);padding:1px 5px;border-radius:3px">/feedback</code> cần gửi kèm header:<br><code style="font-family:var(--font-mono);background:var(--color-background-tertiary);padding:1px 5px;border-radius:3px">X-API-Key: &lt;your-key&gt;</code></div>
+    </div>
+    <div style="margin-top:.75rem">
+      <a href="https://restaurant-calling-agent.onrender.com/docs" style="font-size:13px;color:#e94560;text-decoration:none;display:inline-flex;align-items:center;gap:4px">Mở Swagger UI đầy đủ <i class="ti ti-external-link" aria-hidden="true"></i></a>
+    </div>
+  </div>
+</div>
+
+<script>
+const BASE = 'https://restaurant-calling-agent.onrender.com';
+const EXAMPLES = [
+  'I want to order pizza at 7 PM',
+  'Book a table for 2 downtown',
+  'Cancel my reservation please',
+  'What are your opening hours?',
+  'My food is cold and late!',
+  'Hello, good evening'
+];
+const INTENT_META = {
+  order:{icon:'ti-shopping-cart',desc:'Khách muốn đặt món ăn'},
+  greeting:{icon:'ti-hand-stop',desc:'Khách chào hỏi'},
+  reservation:{icon:'ti-calendar',desc:'Khách muốn đặt bàn'},
+  query:{icon:'ti-help-circle',desc:'Khách hỏi thông tin'},
+  complaint:{icon:'ti-mood-sad',desc:'Khách phàn nàn'},
+  cancel:{icon:'ti-x',desc:'Khách muốn huỷ'}
+};
+
+let lastId = null;
+let keyVisible = false;
+
+const chips = document.getElementById('chips');
+EXAMPLES.forEach(ex => {
+  const c = document.createElement('div');
+  c.className = 'chip';
+  c.textContent = ex;
+  c.onclick = () => { document.getElementById('inputText').value = ex; };
+  chips.appendChild(c);
+});
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['predict','intents','docs'][i]===name));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='intents') loadIntents();
+}
+
+function toggleKey() {
+  keyVisible = !keyVisible;
+  document.getElementById('apiKey').type = keyVisible ? 'text' : 'password';
+  document.querySelector('.key-toggle').textContent = keyVisible ? 'Ẩn' : 'Hiện';
+}
+
+async function runPredict() {
+  const text = document.getElementById('inputText').value.trim();
+  const key = document.getElementById('apiKey').value.trim();
+  if(!text) { document.getElementById('inputText').focus(); return; }
+
+  const btn = document.getElementById('predictBtn');
+  const spinner = document.getElementById('spinner');
+  const label = document.getElementById('btnLabel');
+  btn.disabled = true; spinner.classList.add('show'); label.textContent = 'Đang gửi...';
+  document.getElementById('resultBox').classList.remove('show');
+  document.getElementById('feedbackForm').classList.remove('show');
+
+  try {
+    const res = await fetch(BASE+'/predict', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-API-Key':key},
+      body: JSON.stringify({text})
+    });
+    const data = await res.json();
+    showResult(res.ok, res.status, data);
+    if(res.ok) lastId = data.id;
+  } catch(e) {
+    showResult(false, 0, {error: 'Không kết nối được API. Server có thể đang ngủ (30-60s), thử lại.'});
+  } finally {
+    btn.disabled = false; spinner.classList.remove('show'); label.textContent = 'Gửi yêu cầu';
+  }
+}
+
+function showResult(ok, status, data) {
+  const box = document.getElementById('resultBox');
+  box.classList.add('show');
+  document.getElementById('resultStatus').textContent = ok ? status+' OK' : status+' Error';
+  document.getElementById('resultStatus').className = 'result-status '+(ok?'status-ok':'status-err');
+
+  const intentDisplay = document.getElementById('intentDisplay');
+  const confBar = document.getElementById('confBar');
+  const entityRow = document.getElementById('entityRow');
+
+  if(ok && data.intent) {
+    intentDisplay.style.display='block';
+    document.getElementById('intentValue').textContent = data.intent;
+    confBar.classList.add('show');
+    const pct = Math.round(data.confidence*100);
+    document.getElementById('confVal').textContent = pct+'%';
+    document.getElementById('confFill').style.width = pct+'%';
+
+    entityRow.innerHTML='';
+    if(data.time) entityRow.innerHTML+=`<span class="entity-pill pill-time"><i class="ti ti-clock" aria-hidden="true"></i>${data.time}</span>`;
+    if(data.food_item) entityRow.innerHTML+=`<span class="entity-pill pill-food"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i>${data.food_item}</span>`;
+    if(data.location) entityRow.innerHTML+=`<span class="entity-pill pill-loc"><i class="ti ti-map-pin" aria-hidden="true"></i>${data.location}</span>`;
+
+    document.getElementById('feedbackForm').classList.add('show');
+    document.getElementById('feedbackMsg').textContent='';
+  } else {
+    intentDisplay.style.display='none';
+    confBar.classList.remove('show');
+    entityRow.innerHTML='';
+  }
+  document.getElementById('rawJson').textContent = JSON.stringify(data, null, 2);
+}
+
+function clearResult() {
+  document.getElementById('inputText').value='';
+  document.getElementById('resultBox').classList.remove('show');
+  document.getElementById('feedbackForm').classList.remove('show');
+  document.getElementById('intentDisplay').style.display='none';
+  document.getElementById('confBar').classList.remove('show');
+}
+
+async function sendFeedback() {
+  const key = document.getElementById('apiKey').value.trim();
+  const correct = document.getElementById('correctIntent').value;
+  if(!lastId) return;
+  try {
+    const res = await fetch(BASE+'/feedback', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-API-Key':key},
+      body: JSON.stringify({call_log_id:lastId, correct_intent:correct})
+    });
+    const data = await res.json();
+    document.getElementById('feedbackMsg').textContent = res.ok ? 'Đã ghi nhận, cảm ơn!' : data.detail || 'Lỗi khi gửi.';
+  } catch(e) {
+    document.getElementById('feedbackMsg').textContent = 'Không kết nối được.';
+  }
+}
+
+async function loadIntents() {
+  const container = document.getElementById('intentCards');
+  try {
+    const res = await fetch(BASE+'/intents');
+    const data = await res.json();
+    container.innerHTML = data.intents.map(it => {
+      const meta = INTENT_META[it.intent] || {icon:'ti-bolt',desc:it.description};
+      return `<div class="intent-card">
+        <div class="intent-badge">${it.intent}</div>
+        <div class="intent-desc">${meta.desc}</div>
+        <div class="intent-ex">"${it.example}"</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    container.innerHTML = '<div style="color:var(--color-text-tertiary);font-size:14px">Không tải được danh sách intent.</div>';
+  }
+}
+</script>
